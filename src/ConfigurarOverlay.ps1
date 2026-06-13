@@ -199,6 +199,9 @@ $close.Height = 34
 $save.Add_Click({
     $settings.AppName = $appName.Text
     $settings.Mode = [string]$mode.SelectedItem
+    if ($settings.Mode -eq "Taskbar") {
+        $showTaskbar.IsChecked = $true
+    }
     $settings.Width = [int]$width.Text
     $settings.Height = [int]$height.Text
     $settings.IntervalMs = [int]$interval.Text

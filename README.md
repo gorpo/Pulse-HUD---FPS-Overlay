@@ -104,7 +104,7 @@ Voce tambem pode editar esse JSON manualmente. Campos principais:
 | Campo | O que muda | Exemplo |
 | --- | --- | --- |
 | `AppName` | Nome da janela, bandeja e atalhos | `Pulse HUD - FPS Overlay` |
-| `Mode` | `Overlay` mostra na tela; `Taskbar` deixa o status na bandeja | `Overlay` |
+| `Mode` | `Overlay` fica como HUD flutuante; `Taskbar` tambem aparece na barra de tarefas | `Overlay` |
 | `X`, `Y` | Posicao inicial do overlay | `20`, `20` |
 | `Width`, `Height` | Tamanho da janela | `238`, `116` |
 | `IntervalMs` | Tempo de atualizacao em ms | `1000` |
@@ -129,7 +129,8 @@ Depois de salvar pelo painel, o overlay aplica as mudancas sozinho em ate 1 segu
 - Para arrastar, deixe `ClickThrough` como `false` e arraste qualquer ponto do overlay.
 - Para jogar sem o mouse bater no overlay, marque `ClickThrough` como `true`.
 - Para ocultar/mostrar rapidamente, use a hotkey configurada em `ToggleHotkey`.
-- Para usar como os overlays que ficam na barra/bandeja do Windows, mude `Mode` para `Taskbar`.
+- Para aparecer na barra de tarefas do Windows, mude `Mode` para `Taskbar` ou marque `ShowInTaskbar`.
+- `Mode = Taskbar` forca `ShowInTaskbar = true` ao salvar pelo painel.
 - O icone da bandeja tem menu com `Mostrar/Ocultar`, `Configurar` e `Sair`.
 
 ## FPS

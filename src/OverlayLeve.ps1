@@ -523,12 +523,14 @@ function Update-StartupShortcut {
 
 # Apply visual/config changes without restarting the overlay.
 function Apply-SettingsToWindow {
+    $showInTaskbar = [bool]$script:Settings.ShowInTaskbar -or $script:Settings.Mode -eq "Taskbar"
+
     $window.Title = $script:Settings.AppName
     $window.Width = [double]$script:Settings.Width
     $window.Height = [double]$script:Settings.Height
     $window.Left = [double]$script:Settings.X
     $window.Top = [double]$script:Settings.Y
-    $window.ShowInTaskbar = [bool]$script:Settings.ShowInTaskbar
+    $window.ShowInTaskbar = $showInTaskbar
     $border.Background = Convert-Brush $script:Settings.BackgroundColor ([double]$script:Settings.Opacity)
     $border.BorderBrush = Convert-Brush $script:Settings.AccentColor 0.55
 
@@ -548,16 +550,14 @@ function Apply-SettingsToWindow {
     }
 
     if ($script:WindowHandle -ne [IntPtr]::Zero) {
-        [PulseHudNative]::SetClickThrough($script:WindowHandle, [bool]$script:Settings.ClickThrough, [bool]$script:Settings.ShowInTaskbar)
+        [PulseHudNative]::SetClickThrough($script:WindowHandle, [bool]$script:Settings.ClickThrough, $showInTaskbar)
     }
 
     if (-not $script:DialogStarted) {
         return
     }
 
-    if ($script:Settings.Mode -eq "Taskbar") {
-        $window.Hide()
-    } elseif (-not $script:HiddenByHotkey) {
+    if (-not $script:HiddenByHotkey) {
         $window.Show()
     }
 
@@ -580,7 +580,7 @@ function Toggle-Overlay {
     $script:HiddenByHotkey = -not $script:HiddenByHotkey
     if ($script:HiddenByHotkey) {
         $window.Hide()
-    } elseif ($script:Settings.Mode -ne "Taskbar") {
+    } else {
         $window.Show()
         $window.Activate()
     }
@@ -599,7 +599,7 @@ function Register-ToggleHotkey {
     }
 }
 
-# In Taskbar mode, the tray tooltip becomes the compact status surface.
+# The tray tooltip mirrors the live values even when the taskbar entry is shown.
 function Update-TrayText {
     param([string]$Fps, [string]$Cpu, [string]$Gpu, [string]$Ram)
 
@@ -674,7 +674,8 @@ $window.Add_LocationChanged({
 $window.Add_SourceInitialized({
     $helper = New-Object System.Windows.Interop.WindowInteropHelper($window)
     $script:WindowHandle = $helper.Handle
-    [PulseHudNative]::SetClickThrough($script:WindowHandle, [bool]$script:Settings.ClickThrough, [bool]$script:Settings.ShowInTaskbar)
+    $showInTaskbar = [bool]$script:Settings.ShowInTaskbar -or $script:Settings.Mode -eq "Taskbar"
+    [PulseHudNative]::SetClickThrough($script:WindowHandle, [bool]$script:Settings.ClickThrough, $showInTaskbar)
     Register-ToggleHotkey
 
     $source = [System.Windows.Interop.HwndSource]::FromHwnd($script:WindowHandle)
@@ -691,7 +692,7 @@ $window.Add_SourceInitialized({
 # Hide only after ShowDialog has started; hiding before ShowDialog breaks WPF.
 $window.Add_Loaded({
     $script:DialogStarted = $true
-    if ($script:Settings.Mode -eq "Taskbar" -or $script:HiddenByHotkey) {
+    if ($script:HiddenByHotkey) {
         $window.Hide()
     }
 })
