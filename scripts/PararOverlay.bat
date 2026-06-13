@@ -7,7 +7,7 @@ if exist "%PIDFILE%" (
     rem Normal path: stop the exact process that wrote overlay.pid.
     for /f %%p in (%PIDFILE%) do taskkill /PID %%p /F >nul 2>&1
     del "%PIDFILE%" >nul 2>&1
-) else (
-    rem Fallback for a stale/missing PID file.
-    powershell.exe -NoProfile -Command "Get-Process powershell -ErrorAction SilentlyContinue | Where-Object { $_.MainWindowTitle -eq 'Overlay Leve' } | Stop-Process -Force" >nul 2>&1
 )
+
+rem Fallback for launcher-based starts or stale PID files.
+powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "$root=[IO.Path]::GetFullPath('%ROOT%'); $self=$PID; Get-CimInstance Win32_Process -Filter \"Name='powershell.exe'\" | Where-Object { $_.ProcessId -ne $self -and $_.CommandLine -and $_.CommandLine.Contains($root) -and $_.CommandLine.Contains('OverlayLeve.ps1') } | ForEach-Object { Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue }" >nul 2>&1

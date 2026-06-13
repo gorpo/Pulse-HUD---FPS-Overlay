@@ -3,6 +3,7 @@ $ErrorActionPreference = "Stop"
 # Paths used by the test. Runtime files are intentionally ignored by Git.
 $root = Split-Path -Parent $PSScriptRoot
 $script = Join-Path $root "src\OverlayLeve.ps1"
+$appExe = Join-Path $root "bin\PulseHUD.exe"
 $runtime = Join-Path $root ".runtime"
 $pidFile = Join-Path $runtime "overlay.pid"
 $logFile = Join-Path $runtime "overlay.log"
@@ -28,14 +29,20 @@ if ($errors.Count -gt 0) {
 }
 
 # Start from a clean runtime state and feed a fake FPS value.
+& (Join-Path $root "scripts\CompilarExecutaveis.ps1") | Out-Host
+
+if (-not (Test-Path -LiteralPath $appExe)) {
+    throw "PulseHUD.exe was not created."
+}
+
 New-Item -ItemType Directory -Force -Path $runtime | Out-Null
 Remove-Item -LiteralPath $pidFile -ErrorAction SilentlyContinue
 Remove-Item -LiteralPath $logFile -ErrorAction SilentlyContinue
 Set-Content -LiteralPath $fpsFile -Value "144" -Encoding ASCII
 
-# Launch through the same hidden VBS entry point users run.
+# Launch through the final .exe entry point users run.
 Write-Host "Starting overlay..."
-Start-Process -FilePath "wscript.exe" -ArgumentList "`"$root\scripts\IniciarOverlay.vbs`""
+Start-Process -FilePath $appExe -WorkingDirectory $root
 Start-Sleep -Seconds 4
 
 if (-not (Test-Path -LiteralPath $pidFile)) {

@@ -24,7 +24,7 @@ Ele foi feito para ser leve, sem instalador e sem dependencias obrigatorias. O o
 Abra:
 
 ```text
-scripts\IniciarOverlay.vbs
+bin\PulseHUD.exe
 ```
 
 Para fechar:
@@ -42,7 +42,7 @@ scripts\IniciarOverlayDebug.bat
 Para configurar visual, tamanho, transparencia, hotkey e inicializacao com Windows:
 
 ```text
-scripts\ConfigurarOverlay.vbs
+bin\PulseHUDConfig.exe
 ```
 
 Para criar um atalho no Desktop:
@@ -50,6 +50,34 @@ Para criar um atalho no Desktop:
 ```powershell
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File ".\scripts\CriarAtalhoDesktop.ps1"
 ```
+
+## Instalar e desinstalar
+
+Para instalar no Windows como aplicativo do usuario atual:
+
+```text
+bin\PulseHUDInstall.exe
+```
+
+O instalador copia o app para:
+
+```text
+%LOCALAPPDATA%\Programs\Pulse HUD - FPS Overlay
+```
+
+Ele tambem cria atalhos no Menu Iniciar e registra o app em:
+
+```text
+Configuracoes > Aplicativos > Aplicativos instalados
+```
+
+Para desinstalar:
+
+```text
+bin\PulseHUDUninstall.exe
+```
+
+Ou use o proprio Windows em `Aplicativos instalados`.
 
 ## Teste rapido
 
@@ -62,7 +90,7 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File ".\tests\SmokeTest.ps1"
 O jeito mais facil e abrir:
 
 ```text
-scripts\ConfigurarOverlay.vbs
+bin\PulseHUDConfig.exe
 ```
 
 O painel salva tudo em:
@@ -184,12 +212,20 @@ O `logo.ico` e usado nos atalhos e no icone da bandeja quando disponivel.
 OverlayLeve/
   assets/logo.png
   assets/logo.ico
+  bin/PulseHUD.exe
+  bin/PulseHUDConfig.exe
+  bin/PulseHUDInstall.exe
+  bin/PulseHUDUninstall.exe
   config/settings.json
   src/OverlayLeve.ps1
   src/ConfigurarOverlay.ps1
+  src/Launcher.cs
   scripts/IniciarOverlay.vbs
   scripts/ConfigurarOverlay.vbs
   scripts/IniciarOverlayDebug.bat
+  scripts/Instalar.ps1
+  scripts/Desinstalar.ps1
+  scripts/CompilarExecutaveis.ps1
   scripts/PararOverlay.bat
   scripts/CriarAtalhoDesktop.ps1
   scripts/BaixarPresentMon.ps1

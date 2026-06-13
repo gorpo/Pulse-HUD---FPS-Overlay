@@ -14,6 +14,10 @@
 - Added optional startup with Windows.
 - Added PresentMon tooling for real FPS capture.
 - Added comments throughout the main scripts.
+- Added final `.exe` launchers for app, config, installer and uninstaller.
+- Added per-user Windows installer and uninstaller registration.
+- Added Programs/Apps uninstall entry via HKCU.
+- Improved metric layout with aligned percentage and detail columns.
 
 ## v0.1.0
 

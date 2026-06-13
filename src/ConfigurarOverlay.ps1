@@ -16,7 +16,7 @@ function Get-DefaultSettings {
         Mode = "Overlay"
         X = 20
         Y = 20
-        Width = 238
+        Width = 286
         Height = 116
         IntervalMs = 1000
         BackgroundColor = "#0D0F12"
@@ -150,23 +150,30 @@ $clickThrough = New-CheckBox ([bool]$settings.ClickThrough)
 $showTaskbar = New-CheckBox ([bool]$settings.ShowInTaskbar)
 $startup = New-CheckBox ([bool]$settings.StartWithWindows)
 
-$row = 0
-Add-Row $grid $row++ "Nome" $appName
-Add-Row $grid $row++ "Modo" $mode
-Add-Row $grid $row++ "Largura" $width
-Add-Row $grid $row++ "Altura" $height
-Add-Row $grid $row++ "Atualizacao (ms)" $interval
-Add-Row $grid $row++ "Fundo" $bg
-Add-Row $grid $row++ "Texto" $text
-Add-Row $grid $row++ "Rotulos" $label
-Add-Row $grid $row++ "Borda/acento" $accent
-Add-Row $grid $row++ "Transparencia" $opacity
-Add-Row $grid $row++ "Tamanho texto" $font
-Add-Row $grid $row++ "Tamanho rotulos" $labelFont
-Add-Row $grid $row++ "Atalho ocultar" $hotkey
-Add-Row $grid $row++ "Click-through" $clickThrough
-Add-Row $grid $row++ "Mostrar na barra" $showTaskbar
-Add-Row $grid $row++ "Iniciar com Windows" $startup
+$script:row = 0
+function Add-NextRow {
+    param([string]$Label, $Control)
+
+    Add-Row $grid $script:row $Label $Control
+    $script:row++
+}
+
+Add-NextRow "Nome" $appName
+Add-NextRow "Modo" $mode
+Add-NextRow "Largura" $width
+Add-NextRow "Altura" $height
+Add-NextRow "Atualizacao (ms)" $interval
+Add-NextRow "Fundo" $bg
+Add-NextRow "Texto" $text
+Add-NextRow "Rotulos" $label
+Add-NextRow "Borda/acento" $accent
+Add-NextRow "Transparencia" $opacity
+Add-NextRow "Tamanho texto" $font
+Add-NextRow "Tamanho rotulos" $labelFont
+Add-NextRow "Atalho ocultar" $hotkey
+Add-NextRow "Click-through" $clickThrough
+Add-NextRow "Mostrar na barra" $showTaskbar
+Add-NextRow "Iniciar com Windows" $startup
 
 $buttons = New-Object System.Windows.Controls.StackPanel
 $buttons.Orientation = "Horizontal"

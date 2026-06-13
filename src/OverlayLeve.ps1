@@ -50,7 +50,7 @@ function Get-DefaultSettings {
         Mode = "Overlay"
         X = 20
         Y = 20
-        Width = 238
+        Width = 286
         Height = 116
         IntervalMs = 1000
         BackgroundColor = "#0D0F12"
@@ -282,6 +282,22 @@ function Format-Percent {
 }
 
 # CPU displays percentage plus approximate GHz, matching RAM's two-value style.
+function Split-MetricText {
+    param([string]$Text)
+
+    if ([string]::IsNullOrWhiteSpace($Text) -or $Text -eq "--") {
+        return [pscustomobject]@{ Primary = "--"; Secondary = "" }
+    }
+
+    $parts = $Text -split "\s{2,}", 2
+    if ($parts.Count -eq 1) {
+        return [pscustomobject]@{ Primary = $parts[0]; Secondary = "" }
+    }
+
+    return [pscustomobject]@{ Primary = $parts[0]; Secondary = $parts[1] }
+}
+
+# CPU displays percentage plus approximate GHz, matching RAM's two-value style.
 function Get-CpuText {
     if ($null -eq $script:CpuCounter) { return "--" }
 
@@ -450,7 +466,8 @@ function Add-MetricRow {
         [System.Windows.Controls.Grid]$Grid,
         [int]$Row,
         [string]$Label,
-        [System.Windows.Controls.TextBlock]$ValueBlock
+        [System.Windows.Controls.TextBlock]$PrimaryBlock,
+        [System.Windows.Controls.TextBlock]$SecondaryBlock
     )
 
     $labelBlock = New-TextBlock $Label $script:Settings.LabelFontSize "SemiBold" $script:Settings.LabelColor
@@ -459,14 +476,23 @@ function Add-MetricRow {
     [System.Windows.Controls.Grid]::SetColumn($labelBlock, 0)
     [void]$Grid.Children.Add($labelBlock)
 
-    $ValueBlock.FontFamily = "Consolas"
-    $ValueBlock.FontSize = $script:Settings.FontSize
-    $ValueBlock.FontWeight = "Bold"
-    $ValueBlock.Foreground = Convert-Brush $script:Settings.TextColor 1
-    $ValueBlock.HorizontalAlignment = "Right"
-    [System.Windows.Controls.Grid]::SetRow($ValueBlock, $Row)
-    [System.Windows.Controls.Grid]::SetColumn($ValueBlock, 1)
-    [void]$Grid.Children.Add($ValueBlock)
+    $PrimaryBlock.FontFamily = "Consolas"
+    $PrimaryBlock.FontSize = $script:Settings.FontSize
+    $PrimaryBlock.FontWeight = "Bold"
+    $PrimaryBlock.Foreground = Convert-Brush $script:Settings.TextColor 1
+    $PrimaryBlock.HorizontalAlignment = "Left"
+    [System.Windows.Controls.Grid]::SetRow($PrimaryBlock, $Row)
+    [System.Windows.Controls.Grid]::SetColumn($PrimaryBlock, 1)
+    [void]$Grid.Children.Add($PrimaryBlock)
+
+    $SecondaryBlock.FontFamily = "Consolas"
+    $SecondaryBlock.FontSize = [Math]::Max(10, [double]$script:Settings.FontSize - 1)
+    $SecondaryBlock.FontWeight = "SemiBold"
+    $SecondaryBlock.Foreground = Convert-Brush $script:Settings.TextColor 0.86
+    $SecondaryBlock.HorizontalAlignment = "Right"
+    [System.Windows.Controls.Grid]::SetRow($SecondaryBlock, $Row)
+    [System.Windows.Controls.Grid]::SetColumn($SecondaryBlock, 2)
+    [void]$Grid.Children.Add($SecondaryBlock)
 
     return $labelBlock
 }
@@ -511,9 +537,14 @@ function Apply-SettingsToWindow {
         $label.Foreground = Convert-Brush $script:Settings.LabelColor 1
     }
 
-    foreach ($value in @($fpsValue, $cpuValue, $gpuValue, $ramValue)) {
+    foreach ($value in @($fpsPrimary, $cpuPrimary, $gpuPrimary, $ramPrimary)) {
         $value.FontSize = [double]$script:Settings.FontSize
         $value.Foreground = Convert-Brush $script:Settings.TextColor 1
+    }
+
+    foreach ($value in @($fpsSecondary, $cpuSecondary, $gpuSecondary, $ramSecondary)) {
+        $value.FontSize = [Math]::Max(10, [double]$script:Settings.FontSize - 1)
+        $value.Foreground = Convert-Brush $script:Settings.TextColor 0.86
     }
 
     if ($script:WindowHandle -ne [IntPtr]::Zero) {
@@ -595,22 +626,27 @@ $border.Padding = "10,8,10,8"
 $border.BorderThickness = 1
 
 $grid = New-Object System.Windows.Controls.Grid
-$grid.ColumnDefinitions.Add((New-Object System.Windows.Controls.ColumnDefinition -Property @{ Width = "54" }))
+$grid.ColumnDefinitions.Add((New-Object System.Windows.Controls.ColumnDefinition -Property @{ Width = "52" }))
+$grid.ColumnDefinitions.Add((New-Object System.Windows.Controls.ColumnDefinition -Property @{ Width = "74" }))
 $grid.ColumnDefinitions.Add((New-Object System.Windows.Controls.ColumnDefinition -Property @{ Width = "*" }))
 1..4 | ForEach-Object {
     $grid.RowDefinitions.Add((New-Object System.Windows.Controls.RowDefinition -Property @{ Height = "25" }))
 }
 
-$fpsValue = New-TextBlock "--" $script:Settings.FontSize "Bold" $script:Settings.TextColor
-$cpuValue = New-TextBlock "--" $script:Settings.FontSize "Bold" $script:Settings.TextColor
-$gpuValue = New-TextBlock "--" $script:Settings.FontSize "Bold" $script:Settings.TextColor
-$ramValue = New-TextBlock "--" $script:Settings.FontSize "Bold" $script:Settings.TextColor
+$fpsPrimary = New-TextBlock "--" $script:Settings.FontSize "Bold" $script:Settings.TextColor
+$cpuPrimary = New-TextBlock "--" $script:Settings.FontSize "Bold" $script:Settings.TextColor
+$gpuPrimary = New-TextBlock "--" $script:Settings.FontSize "Bold" $script:Settings.TextColor
+$ramPrimary = New-TextBlock "--" $script:Settings.FontSize "Bold" $script:Settings.TextColor
+$fpsSecondary = New-TextBlock "" $script:Settings.FontSize "SemiBold" $script:Settings.TextColor
+$cpuSecondary = New-TextBlock "" $script:Settings.FontSize "SemiBold" $script:Settings.TextColor
+$gpuSecondary = New-TextBlock "" $script:Settings.FontSize "SemiBold" $script:Settings.TextColor
+$ramSecondary = New-TextBlock "" $script:Settings.FontSize "SemiBold" $script:Settings.TextColor
 
 $script:LabelBlocks = @()
-$script:LabelBlocks += Add-MetricRow $grid 0 "FPS" $fpsValue
-$script:LabelBlocks += Add-MetricRow $grid 1 "CPU" $cpuValue
-$script:LabelBlocks += Add-MetricRow $grid 2 "GPU" $gpuValue
-$script:LabelBlocks += Add-MetricRow $grid 3 "RAM" $ramValue
+$script:LabelBlocks += Add-MetricRow $grid 0 "FPS" $fpsPrimary $fpsSecondary
+$script:LabelBlocks += Add-MetricRow $grid 1 "CPU" $cpuPrimary $cpuSecondary
+$script:LabelBlocks += Add-MetricRow $grid 2 "GPU" $gpuPrimary $gpuSecondary
+$script:LabelBlocks += Add-MetricRow $grid 3 "RAM" $ramPrimary $ramSecondary
 
 $border.Child = $grid
 $window.Content = $border
@@ -689,7 +725,12 @@ if (-not $NoTray) {
 
     $showItem.Add_Click({ Toggle-Overlay })
     $configItem.Add_Click({
-        Start-Process powershell.exe -ArgumentList @("-NoProfile", "-ExecutionPolicy", "Bypass", "-STA", "-File", "`"$script:ProjectRoot\src\ConfigurarOverlay.ps1`"")
+        $configExe = Join-Path $script:ProjectRoot "bin\PulseHUDConfig.exe"
+        if (Test-Path -LiteralPath $configExe) {
+            Start-Process -FilePath $configExe -WorkingDirectory $script:ProjectRoot
+        } else {
+            Start-Process powershell.exe -ArgumentList @("-NoProfile", "-ExecutionPolicy", "Bypass", "-STA", "-File", "`"$script:ProjectRoot\src\ConfigurarOverlay.ps1`"") -WorkingDirectory $script:ProjectRoot
+        }
     })
     $exitItem.Add_Click({ $window.Close() })
     $script:NotifyIcon.ContextMenuStrip = $menu
@@ -710,10 +751,18 @@ $timer.Add_Tick({
     $gpu = Get-GpuText
     $ram = Get-RamText
 
-    $fpsValue.Text = $fps
-    $cpuValue.Text = $cpu
-    $gpuValue.Text = $gpu
-    $ramValue.Text = $ram
+    $cpuParts = Split-MetricText $cpu
+    $gpuParts = Split-MetricText $gpu
+    $ramParts = Split-MetricText $ram
+
+    $fpsPrimary.Text = $fps
+    $fpsSecondary.Text = ""
+    $cpuPrimary.Text = $cpuParts.Primary
+    $cpuSecondary.Text = $cpuParts.Secondary
+    $gpuPrimary.Text = $gpuParts.Primary
+    $gpuSecondary.Text = $gpuParts.Secondary
+    $ramPrimary.Text = $ramParts.Primary
+    $ramSecondary.Text = $ramParts.Secondary
     $timer.Interval = [TimeSpan]::FromMilliseconds([Math]::Max(250, [int]$script:Settings.IntervalMs))
 
     Update-TrayText $fps $cpu $gpu $ram

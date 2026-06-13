@@ -9,6 +9,9 @@ $tempDir = Join-Path $env:TEMP ("pulse-hud-release-" + [guid]::NewGuid().ToStrin
 New-Item -ItemType Directory -Force -Path $releaseDir | Out-Null
 New-Item -ItemType Directory -Force -Path $tempDir | Out-Null
 
+# Release packages expose .exe entry points. Build them before zipping.
+& (Join-Path $root "scripts\CompilarExecutaveis.ps1") | Out-Host
+
 try {
     # Copy only files useful to users; skip Git internals and runtime state.
     Get-ChildItem -LiteralPath $root -Force |
