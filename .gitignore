@@ -1,0 +1,8 @@
+.runtime/
+*.log
+*.tmp
+*.csv
+*.zip
+tools/
+PresentMon/
+*.user
