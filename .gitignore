@@ -1,8 +1,3 @@
-.runtime/
-*.log
-*.tmp
-*.csv
-*.zip
-tools/
-PresentMon/
-*.user
+# Intentionally empty.
+# Runtime files, assets, tools and release artifacts are visible to Git so the
+# full project can be preserved when desired.
