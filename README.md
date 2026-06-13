@@ -131,6 +131,8 @@ Depois de salvar pelo painel, o overlay aplica as mudancas sozinho em ate 1 segu
 - Para ocultar/mostrar rapidamente, use a hotkey configurada em `ToggleHotkey`.
 - Para aparecer na barra de tarefas do Windows, mude `Mode` para `Taskbar` ou marque `ShowInTaskbar`.
 - `Mode = Taskbar` forca `ShowInTaskbar = true` ao salvar pelo painel.
+- No modo `Taskbar`, o Windows mostra os dados no titulo/preview do botao da barra e no tooltip do icone perto do relogio. O Windows nao permite que um app comum desenhe texto fixo diretamente dentro da barra de tarefas.
+- Para ver os numeros sempre visiveis na tela, use `Mode = Overlay`.
 - O icone da bandeja tem menu com `Mostrar/Ocultar`, `Configurar` e `Sair`.
 
 ## FPS

@@ -177,12 +177,20 @@ public static class PulseHudNative {
     public const int WS_EX_TOOLWINDOW = 0x00000080;
     public const int WS_EX_APPWINDOW = 0x00040000;
     public const int WM_HOTKEY = 0x0312;
+    private const uint SWP_NOSIZE = 0x0001;
+    private const uint SWP_NOMOVE = 0x0002;
+    private const uint SWP_NOZORDER = 0x0004;
+    private const uint SWP_NOACTIVATE = 0x0010;
+    private const uint SWP_FRAMECHANGED = 0x0020;
 
     [DllImport("user32.dll")]
     public static extern int GetWindowLong(IntPtr hWnd, int nIndex);
 
     [DllImport("user32.dll")]
     public static extern int SetWindowLong(IntPtr hWnd, int nIndex, int dwNewLong);
+
+    [DllImport("user32.dll")]
+    public static extern bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter, int X, int Y, int cx, int cy, uint uFlags);
 
     [DllImport("user32.dll")]
     public static extern bool RegisterHotKey(IntPtr hWnd, int id, uint fsModifiers, uint vk);
@@ -202,6 +210,7 @@ public static class PulseHudNative {
         }
 
         SetWindowLong(hwnd, GWL_EXSTYLE, style);
+        SetWindowPos(hwnd, IntPtr.Zero, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE | SWP_FRAMECHANGED);
     }
 }
 "@
@@ -549,6 +558,10 @@ function Apply-SettingsToWindow {
         $value.Foreground = Convert-Brush $script:Settings.TextColor 0.86
     }
 
+    $fpsSecondary.FontSize = [double]$script:Settings.FontSize
+    $fpsSecondary.FontWeight = "Bold"
+    $fpsSecondary.Foreground = Convert-Brush $script:Settings.TextColor 1
+
     if ($script:WindowHandle -ne [IntPtr]::Zero) {
         [PulseHudNative]::SetClickThrough($script:WindowHandle, [bool]$script:Settings.ClickThrough, $showInTaskbar)
     }
@@ -608,6 +621,18 @@ function Update-TrayText {
     $text = "$($script:Settings.AppName)`nFPS $Fps | CPU $Cpu`nGPU $Gpu | RAM $Ram"
     if ($text.Length -gt 63) { $text = $text.Substring(0, 63) }
     $script:NotifyIcon.Text = $text
+}
+
+# The Windows taskbar normally shows the window title only in hover previews or
+# when taskbar labels are enabled, so this mirrors live metrics there.
+function Update-TaskbarTitle {
+    param([string]$Fps, [string]$Cpu, [string]$Gpu, [string]$Ram)
+
+    if ($script:Settings.Mode -eq "Taskbar" -or [bool]$script:Settings.ShowInTaskbar) {
+        $window.Title = "FPS $Fps | CPU $Cpu | GPU $Gpu | RAM $Ram"
+    } else {
+        $window.Title = $script:Settings.AppName
+    }
 }
 
 # Build the borderless overlay window. WindowStyle=None removes the title bar.
@@ -756,8 +781,8 @@ $timer.Add_Tick({
     $gpuParts = Split-MetricText $gpu
     $ramParts = Split-MetricText $ram
 
-    $fpsPrimary.Text = $fps
-    $fpsSecondary.Text = ""
+    $fpsPrimary.Text = ""
+    $fpsSecondary.Text = $fps
     $cpuPrimary.Text = $cpuParts.Primary
     $cpuSecondary.Text = $cpuParts.Secondary
     $gpuPrimary.Text = $gpuParts.Primary
@@ -767,6 +792,7 @@ $timer.Add_Tick({
     $timer.Interval = [TimeSpan]::FromMilliseconds([Math]::Max(250, [int]$script:Settings.IntervalMs))
 
     Update-TrayText $fps $cpu $gpu $ram
+    Update-TaskbarTitle $fps $cpu $gpu $ram
 })
 
 $timer.Start()
