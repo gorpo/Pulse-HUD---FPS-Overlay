@@ -50,7 +50,7 @@ function Get-DefaultSettings {
         Mode = "Overlay"
         X = 20
         Y = 20
-        Width = 286
+        Width = 224
         Height = 116
         IntervalMs = 1000
         BackgroundColor = "#0D0F12"
@@ -480,7 +480,7 @@ function Add-MetricRow {
     $PrimaryBlock.FontSize = $script:Settings.FontSize
     $PrimaryBlock.FontWeight = "Bold"
     $PrimaryBlock.Foreground = Convert-Brush $script:Settings.TextColor 1
-    $PrimaryBlock.HorizontalAlignment = "Left"
+    $PrimaryBlock.HorizontalAlignment = "Right"
     [System.Windows.Controls.Grid]::SetRow($PrimaryBlock, $Row)
     [System.Windows.Controls.Grid]::SetColumn($PrimaryBlock, 1)
     [void]$Grid.Children.Add($PrimaryBlock)
@@ -626,8 +626,8 @@ $border.Padding = "10,8,10,8"
 $border.BorderThickness = 1
 
 $grid = New-Object System.Windows.Controls.Grid
+$grid.ColumnDefinitions.Add((New-Object System.Windows.Controls.ColumnDefinition -Property @{ Width = "48" }))
 $grid.ColumnDefinitions.Add((New-Object System.Windows.Controls.ColumnDefinition -Property @{ Width = "52" }))
-$grid.ColumnDefinitions.Add((New-Object System.Windows.Controls.ColumnDefinition -Property @{ Width = "74" }))
 $grid.ColumnDefinitions.Add((New-Object System.Windows.Controls.ColumnDefinition -Property @{ Width = "*" }))
 1..4 | ForEach-Object {
     $grid.RowDefinitions.Add((New-Object System.Windows.Controls.RowDefinition -Property @{ Height = "25" }))

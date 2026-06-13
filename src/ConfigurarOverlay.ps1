@@ -16,7 +16,7 @@ function Get-DefaultSettings {
         Mode = "Overlay"
         X = 20
         Y = 20
-        Width = 286
+        Width = 224
         Height = 116
         IntervalMs = 1000
         BackgroundColor = "#0D0F12"
